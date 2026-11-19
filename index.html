@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b10">
+<title>SLAY</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--bg:#0b0b10;--card:#15151d;--line:#262633;--txt:#ececf3;--mut:#8c8ca3;--acc1:#7b3cff;--acc2:#d63cff;--ok:#3ddc97;--warn:#ffb020;--bad:#ff4d6d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 80px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{font-weight:900;font-size:28px;letter-spacing:2px;background:linear-gradient(90deg,var(--acc1),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{color:var(--mut);font-size:12px;margin-top:-2px}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px}
+.icon{background:var(--card);color:var(--txt);padding:8px 12px;border:1px solid var(--line)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+label.h{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--mut);margin:0 0 6px}
+textarea,input,select{width:100%;background:#0f0f15;color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit}
+textarea{min-height:130px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chip{background:#0f0f15;color:var(--mut);border:1px solid var(--line);padding:6px 11px;border-radius:999px;font-size:13px}
+.chip.on{color:#fff;border-color:transparent;background:linear-gradient(90deg,var(--acc1),var(--acc2))}
+.row{display:flex;gap:8px;align-items:center}
+.drop{border:1px dashed var(--line);border-radius:12px;padding:10px;text-align:center;color:var(--mut);font-size:13px;margin-top:8px;cursor:pointer}
+.drop img{max-height:160px;max-width:100%;border-radius:8px;display:block;margin:6px auto 0}
+.go{width:100%;padding:14px;font-weight:800;font-size:16px;letter-spacing:1px;color:#fff;background:linear-gradient(90deg,var(--acc1),var(--acc2))}
+.go:disabled{opacity:.5}
+.read{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.stat{background:#0f0f15;border-radius:12px;padding:8px;text-align:center}
+.stat b{display:block;font-size:18px}
+.stat span{font-size:11px;color:var(--mut);text-transform:uppercase}
+.verdict{font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.warn{background:rgba(255,176,32,.1);border:1px solid rgba(255,176,32,.4);color:var(--warn);border-radius:12px;padding:8px 10px;margin:6px 0;font-size:13px;font-weight:600}
+.bad{background:rgba(255,77,109,.1);border-color:rgba(255,77,109,.4);color:var(--bad)}
+.line{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.line:first-of-type{border-top:0}
+.bubble{flex:1;background:linear-gradient(135deg,var(--acc1),var(--acc2));color:#fff;padding:10px 13px;border-radius:18px 18px 4px 18px}
+.meta{font-size:12px;color:var(--mut);margin-top:4px}
+.meta i{color:#c7a6ff;font-style:normal;font-weight:600}
+.copy{background:#0f0f15;color:var(--txt);border:1px solid var(--line);padding:8px 10px;font-size:13px}
+.tweaks{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.small{font-size:12px;color:var(--mut)}
+dialog{background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:16px;max-width:520px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+.field{margin-bottom:10px}
+a{color:#c7a6ff}
+.hist{font-size:13px;color:var(--mut);padding:8px 0;border-top:1px solid var(--line);cursor:pointer}
+.hist:hover{color:var(--txt)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #fff;border-right-color:transparent;border-radius:50%;animation:s .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><div class="logo">SLAY</div><div class="tag">say it, log off.</div></div>
+    <div class="row"><button class="icon" id="histBtn" title="History">🕘</button><button class="icon" id="setBtn" title="Settings">⚙️</button></div>
+  </header>
+
+  <div class="card">
+    <label class="h">Move</label>
+    <div class="chips" id="mode">
+      <button class="chip on" data-v="auto">Auto</button>
+      <button class="chip" data-v="opener">Opener</button>
+      <button class="chip" data-v="reply">Reply</button>
+      <button class="chip" data-v="link">Push to link</button>
+      <button class="chip" data-v="flip">Flip rejection</button>
+    </div>
+    <label class="h">Her vibe</label>
+    <div class="chips" id="vibe">
+      <button class="chip on" data-v="auto">Auto</button>
+      <button class="chip" data-v="dry">Dry</button>
+      <button class="chip" data-v="loud">Loud</button>
+      <button class="chip" data-v="flirty">Flirty</button>
+      <button class="chip" data-v="testing">Testing u</button>
+    </div>
+    <label class="h">Spice</label>
+    <div class="chips" id="spice">
+      <button class="chip" data-v="1">🧊 Smooth</button>
+      <button class="chip on" data-v="2">😏 Cheeky</button>
+      <button class="chip" data-v="3">🔥 Unhinged</button>
+    </div>
+
+    <label class="h">Convo or her post</label>
+    <textarea id="convo" placeholder="her: you don't look real&#10;me: ...&#10;&#10;or for an opener: she posted a gym mirror pic, caption 'leg day ruined me'"></textarea>
+    <div class="drop" id="drop">📸 Tap, drop or Ctrl+V a screenshot<input type="file" id="file" accept="image/*" hidden><div id="prev"></div></div>
+    <div class="field" style="margin-top:8px"><input id="extra" placeholder="Extra context (optional): met at a party, she's 2 days in, etc."></div>
+    <button class="go" id="go">GENERATE</button>
+    <div class="small" style="margin-top:6px;text-align:center" id="prov"></div>
+  </div>
+
+  <div id="out"></div>
+</div>
+
+<dialog id="set">
+  <h3 style="margin-top:0">Settings</h3>
+  <p class="small">All free. Your key stays in this browser only.</p>
+  <div class="field"><label class="h">Provider</label>
+    <select id="provider">
+      <option value="groq">Groq (free, fastest, recommended)</option>
+      <option value="gemini">Google Gemini (free tier, low daily cap)</option>
+      <option value="ollama">Ollama (local on your PC, unlimited)</option>
+    </select></div>
+  <div class="field" id="keyRow"><label class="h">API key</label><input id="key" type="password" placeholder="paste key"><div class="small" id="keyHelp"></div></div>
+  <div class="field"><label class="h">Text model</label><input id="mText"></div>
+  <div class="field"><label class="h">Screenshot (vision) model</label><input id="mVision"></div>
+  <div class="row" style="justify-content:flex-end"><button class="icon" id="reset">Reset models</button><button class="go" style="width:auto;padding:10px 18px" id="save">Save</button></div>
+</dialog>
+
+<dialog id="histDlg">
+  <h3 style="margin-top:0">History</h3>
+  <div id="histList" class="small">Nothing yet.</div>
+  <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="icon" id="clearHist">Clear</button><button class="icon" onclick="this.closest('dialog').close()">Close</button></div>
+</dialog>
+
+<script src="prompt.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("slay_" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("slay_" + k, JSON.stringify(v)); } catch {} },
+};
+const DEFAULTS = {
+  groq:   { text: "qwen/qwen3.8-27b", fallback: "openai/gpt-oss-120b", vision: "qwen/qwen3.8-27b", help: 'Free key: <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> (no card).' },
+  gemini: { text: "gemini-2.5-flash-lite", vision: "gemini-2.5-flash-lite", help: 'Free key: <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a>.' },
+  ollama: { text: "llama3.1:8b", vision: "qwen2.5vl:7b", help: "" },
+};
+let cfg = store.get("cfg", { provider: "groq", keys: {}, models: {} });
+const state = { mode: "auto", vibe: "auto", spice: 2, image: null, last: null };
+
+// ---------- chips ----------
+for (const id of ["mode", "vibe", "spice"]) {
+  $("#" + id).addEventListener("click", e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    [...b.parentNode.children].forEach(c => c.classList.toggle("on", c === b));
+    state[id] = id === "spice" ? +b.dataset.v : b.dataset.v;
+  });
+}
+
+// ---------- screenshot ----------
+const drop = $("#drop");
+drop.onclick = () => $("#file").click();
+$("#file").onchange = e => e.target.files[0] && loadImg(e.target.files[0]);
+drop.ondragover = e => e.preventDefault();
+drop.ondrop = e => { e.preventDefault(); const f = e.dataTransfer.files[0]; f && loadImg(f); };
+document.addEventListener("paste", e => {
+  const it = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith("image/"));
+  if (it) loadImg(it.getAsFile());
+});
+function loadImg(file) {
+  const img = new Image(), r = new FileReader();
+  r.onload = () => {
+    img.onload = () => { // downscale so free-tier token limits don't choke
+      const max = 1280, s = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas"); c.width = img.width * s; c.height = img.height * s;
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      state.image = c.toDataURL("image/jpeg", 0.85);
+      $("#prev").innerHTML = `<img src="${state.image}"><button class="icon" style="margin-top:6px" id="rmImg">remove</button>`;
+      $("#rmImg").onclick = ev => { ev.stopPropagation(); state.image = null; $("#prev").innerHTML = ""; };
+    };
+    img.src = r.result;
+  };
+  r.readAsDataURL(file);
+}
+
+// ---------- providers ----------
+// models providers have retired: ignore them if they're still saved in settings
+const RETIRED = ["llama-3.3-70b-versatile", "meta-llama/llama-4-scout-17b-16e-instruct"];
+function model(kind) {
+  const saved = cfg.models[cfg.provider + "_" + kind];
+  return saved && !RETIRED.includes(saved) ? saved : DEFAULTS[cfg.provider][kind];
+}
+
+async function groqCall(key, m, system, user, image) {
+  const content = image ? [{ type: "text", text: user }, { type: "image_url", image_url: { url: image } }] : user;
+  const body = { model: m, temperature: 0.9, messages: [{ role: "system", content: system }, { role: "user", content }] };
+  if (!image) body.response_format = { type: "json_object" };
+  const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + key }, body: JSON.stringify(body),
+  });
+  const j = await r.json();
+  if (!r.ok) { const e = new Error(j.error?.message || r.status); e.status = r.status; throw e; }
+  return j.choices[0].message.content;
+}
+
+async function callLLM(system, user, image) {
+  const p = cfg.provider, key = cfg.keys[p], m = model(image ? "vision" : "text");
+  if (p !== "ollama" && !key) throw new Error("Add your free API key in ⚙️ Settings first.");
+
+  if (p === "groq") {
+    try { return await groqCall(key, m, system, user, image); }
+    catch (e) {
+      const fb = DEFAULTS.groq.fallback;
+      const retryable = e.status === 429 || /does not exist|decommissioned/i.test(e.message);
+      if (retryable && !image && m !== fb) return await groqCall(key, fb, system, user, null);
+      if (e.status === 429) {
+        const wait = (e.message.match(/try again in ([\d.]+)s/) || [])[1];
+        throw new Error(`Free-tier speed limit hit. Breathe${wait ? `, try again in ${Math.ceil(wait)}s` : " for a minute"}. (Rushing = thirsty anyway.)`);
+      }
+      throw e;
+    }
+  }
+  if (p === "gemini") {
+    const parts = [{ text: user }];
+    if (image) parts.push({ inline_data: { mime_type: "image/jpeg", data: image.split(",")[1] } });
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, {
+      method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: "user", parts }],
+        generationConfig: { temperature: 0.9, responseMimeType: "application/json" } }),
+    });
+    const j = await r.json(); if (!r.ok) throw new Error(j.error?.message || r.status);
+    return j.candidates?.[0]?.content?.parts?.map(x => x.text).join("") || "";
+  }
+  // ollama
+  const msg = { role: "user", content: user }; if (image) msg.images = [image.split(",")[1]];
+  const r = await fetch("http://localhost:11434/api/chat", {
+    method: "POST", body: JSON.stringify({ model: m, stream: false, format: "json", options: { temperature: 0.9 },
+      messages: [{ role: "system", content: system }, msg] }),
+  });
+  const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status);
+  return j.message.content;
+}
+
+function parseJSON(t) {
+  t = t.trim().replace(/^```(json)?/i, "").replace(/```$/, "").trim();
+  try { return JSON.parse(t); } catch {}
+  const a = t.indexOf("{"), b = t.lastIndexOf("}");
+  return JSON.parse(t.slice(a, b + 1));
+}
+
+// ---------- local rule checks (the playbook, enforced without AI) ----------
+function localChecks(convo) {
+  const w = [];
+  const lines = convo.split("\n").map(l => l.trim()).filter(Boolean);
+  const tagged = lines.filter(l => /^(me|her|him|you|she)\s*:/i.test(l));
+  if (tagged.length) {
+    const last = tagged[tagged.length - 1].toLowerCase();
+    const lastTwo = tagged.slice(-2).map(l => /^me|^you|^him/i.test(l));
+    if (/^(me|you|him)\s*:/.test(last)) w.push({ t: lastTwo.length === 2 && lastTwo.every(Boolean) ? "You already double texted. Stop. Let her come back." : "Last message is yours. NO DOUBLE TEXT. Wait for her.", bad: true, dbl: true });
+    const mine = tagged.filter(l => /^(me|you|him)\s*:/i.test(l)).map(l => l.replace(/^\w+\s*:/, ""));
+    const theirs = tagged.filter(l => /^(her|she)\s*:/i.test(l)).map(l => l.replace(/^\w+\s*:/, ""));
+    const avg = a => a.length ? a.join(" ").length / a.length : 0;
+    if (mine.length >= 2 && theirs.length && avg(mine) > avg(theirs) * 2.2) w.push({ t: "Your texts are 2x longer than hers. You're writing essays. Cut it." });
+    const emo = mine.join(" ").match(/\p{Extended_Pictographic}/gu) || [];
+    if (emo.length > Math.max(2, mine.length)) w.push({ t: "Emoji spam detected. Chill." });
+    if (/\b(pretty|beautiful|gorgeous|cute|stunning)\b/i.test(mine[0] || "")) w.push({ t: "You opened with a compliment. Never again." });
+    if (tagged.length > 30) w.push({ t: "Long convo. Stop being her pen pal: push to link or dip." });
+  }
+  return w;
+}
+
+// ---------- generate ----------
+async function generate(tweak = "", force = false) {
+  const convo = $("#convo").value.trim(), extra = $("#extra").value.trim();
+  if (!convo && !state.image) { render({ error: "Paste the convo, describe her post, or drop a screenshot." }); return; }
+  const checks = localChecks(convo);
+  // playbook rule enforced locally: double text = no line, no API call
+  if (checks.some(c => c.dbl) && !force && !state.image) {
+    state.last = { res: { read: { verdict: "wait", summary: "Ball's in her court. Say it, log off. Let her come back." }, warnings: [], lines: [] }, checks, convo };
+    render(state.last); return;
+  }
+  const go = $("#go"); go.disabled = true; go.innerHTML = '<span class="spin"></span>cooking';
+  try {
+    const user = buildUserPrompt({ convo, mode: state.mode, vibe: state.vibe, spice: state.spice,
+      extra: [extra, tweak].filter(Boolean).join(" | "), hasImage: !!state.image, forceReply: force });
+    const res = parseJSON(await callLLM(SLAY_SYSTEM, user, state.image));
+    state.last = { res, checks, convo };
+    const h = store.get("hist", []); h.unshift({ at: Date.now(), convo: convo.slice(0, 300), res }); store.set("hist", h.slice(0, 40));
+    render(state.last);
+  } catch (e) {
+    render({ error: String(e.message || e) + (cfg.provider === "ollama" ? " — is Ollama running with OLLAMA_ORIGINS=* ?" : "") });
+  } finally { go.disabled = false; go.textContent = "GENERATE"; }
+}
+$("#go").onclick = () => generate();
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const VERDICT = { reply: ["Reply", "var(--ok)"], flirt_harder: ["Flirt harder", "var(--acc2)"], ask_out: ["Ask her out", "var(--ok)"], flip: ["Flip it", "var(--acc2)"], wait: ["Wait. Don't text.", "var(--warn)"], dip: ["Dip. Next.", "var(--bad)"] };
+
+function render(d) {
+  const out = $("#out");
+  if (d.error) { out.innerHTML = `<div class="card warn bad">${esc(d.error)}</div>`; return; }
+  const { res, checks } = d, r = res.read || {};
+  const [vt, vc] = VERDICT[r.verdict] || [r.verdict || "?", "var(--txt)"];
+  const warns = [...checks, ...(res.warnings || []).map(t => ({ t }))];
+  const lines = res.lines || [];
+  out.innerHTML = `
+  <div class="card">
+    <div class="read">
+      <div class="stat"><b>${r.interest ?? "?"}/10</b><span>her interest</span></div>
+      <div class="stat"><b>${esc(r.her_tone || "?")}</b><span>her tone</span></div>
+      <div class="stat"><b>${esc(r.chasing || "?")}</b><span>who's chasing</span></div>
+    </div>
+    <div class="verdict" style="color:${vc}">→ ${esc(vt)}</div>
+    <div class="small" style="margin-top:2px">${esc(r.summary || "")}</div>
+    ${warns.map(w => `<div class="warn ${w.bad ? "bad" : ""}">⚠ ${esc(w.t)}</div>`).join("")}
+  </div>
+  <div class="card">
+    ${lines.length ? lines.map((l, i) => `
+      <div class="line"><div style="flex:1"><div class="bubble">${esc(l.text)}</div>
+      <div class="meta"><i>${esc(l.tactic)}</i> · ${esc(l.why)}</div></div>
+      <button class="copy" data-i="${i}">copy</button></div>`).join("")
+      : `<div class="small">No line. The best text right now is no text. ${checks.some(c => c.dbl) ? '<br><br><button class="copy" id="force">I know. Give me one anyway</button>' : ""}</div>`}
+    <div class="tweaks">
+      <button class="chip" data-t="Shorter. Even more low effort.">shorter</button>
+      <button class="chip" data-t="Spicier and bolder.">spicier</button>
+      <button class="chip" data-t="Drier, more nonchalant.">drier</button>
+      <button class="chip" data-t="Steer toward setting a date.">→ date</button>
+      <button class="chip" data-t="Completely different angles.">new angles</button>
+    </div>
+  </div>`;
+  out.querySelectorAll(".copy[data-i]").forEach(b => b.onclick = async () => {
+    try { await navigator.clipboard.writeText(lines[b.dataset.i].text); b.textContent = "copied"; setTimeout(() => b.textContent = "copy", 1200); } catch { b.textContent = "select manually"; }
+  });
+  out.querySelectorAll(".tweaks .chip").forEach(b => b.onclick = () => generate(b.dataset.t));
+  const f = $("#force"); if (f) f.onclick = () => generate("", true);
+}
+
+// ---------- settings ----------
+function fillSettings() {
+  const p = $("#provider").value;
+  $("#key").value = cfg.keys[p] || "";
+  $("#keyRow").style.display = p === "ollama" ? "none" : "";
+  $("#keyHelp").innerHTML = DEFAULTS[p].help;
+  $("#mText").value = cfg.models[p + "_text"] || DEFAULTS[p].text;
+  $("#mVision").value = cfg.models[p + "_vision"] || DEFAULTS[p].vision;
+}
+function showProv() { $("#prov").textContent = `${cfg.provider} · ${model("text")}${cfg.provider !== "ollama" && !cfg.keys[cfg.provider] ? " · no key set" : ""}`; }
+$("#setBtn").onclick = () => { $("#provider").value = cfg.provider; fillSettings(); $("#set").showModal(); };
+$("#provider").onchange = fillSettings;
+$("#reset").onclick = () => { const p = $("#provider").value; $("#mText").value = DEFAULTS[p].text; $("#mVision").value = DEFAULTS[p].vision; };
+$("#save").onclick = () => {
+  const p = $("#provider").value; cfg.provider = p;
+  cfg.keys[p] = $("#key").value.trim();
+  cfg.models[p + "_text"] = $("#mText").value.trim(); cfg.models[p + "_vision"] = $("#mVision").value.trim();
+  store.set("cfg", cfg); $("#set").close(); showProv();
+};
+
+// ---------- history ----------
+$("#histBtn").onclick = () => {
+  const h = store.get("hist", []);
+  $("#histList").innerHTML = h.length ? h.map((x, i) => `<div class="hist" data-i="${i}">${new Date(x.at).toLocaleString()} — ${esc((x.res.lines?.[0]?.text) || x.res.read?.verdict || "")}</div>`).join("") : "Nothing yet.";
+  $("#histList").querySelectorAll(".hist").forEach(el => el.onclick = () => {
+    const x = h[el.dataset.i]; $("#convo").value = x.convo; render({ res: x.res, checks: [] }); $("#histDlg").close();
+  });
+  $("#histDlg").showModal();
+};
+$("#clearHist").onclick = () => { store.set("hist", []); $("#histList").textContent = "Nothing yet."; };
+
+showProv();
+if (!cfg.keys[cfg.provider] && cfg.provider !== "ollama") setTimeout(() => $("#setBtn").click(), 400);
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
